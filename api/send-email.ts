@@ -21,8 +21,9 @@ export async function processContactSubmission(
 ): Promise<SendEmailResult> {
   const apiKey = envConfig?.apiKey || process.env.RESEND_API_KEY;
   if (!apiKey) {
-    throw new Error('Resend API key is not configured. Please set RESEND_API_KEY in your .env or environment variables.');
+    throw new Error('RESEND_API_KEY environment variable is missing on your hosting provider. Please add RESEND_API_KEY to your deployment Environment Variables.');
   }
+
   const adminEmail = envConfig?.adminEmail || process.env.ADMIN_EMAIL || 'info.yashjoshi7355@gmail.com';
   const fromEmail = envConfig?.fromEmail || process.env.FROM_EMAIL || 'Driveo Concierge <onboarding@resend.dev>';
 
@@ -128,7 +129,47 @@ export async function processContactSubmission(
   };
 }
 
-// Serverless / HTTP handler for platforms like Vercel / Netlify
+// Web Standard API handler (Vercel Edge, Cloudflare, Next.js, standard Fetch API)
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+    const result = await processContactSubmission(body);
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+  } catch (error: any) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error.message || 'An unexpected error occurred.',
+      }),
+      {
+        status: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+      }
+    );
+  }
+}
+
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  });
+}
+
+// Node.js Express / Vercel Serverless Function format
 export default async function handler(req: any, res: any) {
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');

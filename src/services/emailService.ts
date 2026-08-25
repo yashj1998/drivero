@@ -37,19 +37,32 @@ export async function sendContactInquiry(formData: ContactFormData): Promise<Sen
     throw new Error('Please enter a more descriptive message (at least 5 characters).');
   }
 
-  const response = await fetch('/api/send-email', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      firstName: formData.firstName.trim(),
-      lastName: formData.lastName.trim(),
-      email: formData.email.trim(),
-      phone: formData.phone?.trim() || '',
-      message: formData.message.trim(),
-    }),
-  });
+  const apiUrl = (import.meta.env.VITE_API_URL as string) || '/api/send-email';
+
+  let response: Response;
+  try {
+    response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone?.trim() || '',
+        message: formData.message.trim(),
+      }),
+    });
+  } catch (netErr: any) {
+    throw new Error('Network error: Unable to connect to email service. Please check your internet connection.');
+  }
+
+  if (response.status === 404) {
+    throw new Error(
+      'Deployment Configuration Notice: Serverless endpoint (/api/send-email) returned 404. Ensure vercel.json / netlify.toml is included and RESEND_API_KEY is configured in your hosting dashboard.'
+    );
+  }
 
   const data = await response.json().catch(() => ({}));
 
