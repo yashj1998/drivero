@@ -62,7 +62,13 @@ export function Footer() {
 
       <div className="mt-10 pt-6 border-t border-black/10 flex flex-col md:flex-row items-center justify-between gap-3">
         <p className="text-xs text-[var(--muted)]">© 2026 Driveo. All rights reserved.</p>
-        <p className="text-xs text-[var(--muted)]">Designed in the spirit of the open road.</p>
+        <div className="flex items-center gap-4">
+          <Link to="/admin" className="text-xs text-[var(--muted)] hover:text-[var(--ink)] transition-colors font-medium">
+            Admin Portal
+          </Link>
+          <span className="text-black/20">·</span>
+          <p className="text-xs text-[var(--muted)]">Designed in the spirit of the open road.</p>
+        </div>
       </div>
     </footer>
   );
