@@ -167,7 +167,8 @@ export interface AnalyticsData {
   recentBookings: BookingRecord[];
 }
 
-const API_BASE = '/api';
+const rawApiUrl = (import.meta.env.VITE_API_URL as string) || '/api';
+const API_BASE = rawApiUrl.endsWith('/api') ? rawApiUrl : (rawApiUrl === '/api' ? '/api' : `${rawApiUrl.replace(/\/$/, '')}/api`);
 
 function getAuthHeader(): Record<string, string> {
   const token = localStorage.getItem('drivero_admin_token');
